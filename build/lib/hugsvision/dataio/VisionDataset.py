@@ -15,29 +15,11 @@ from tabulate import tabulate
 
 class VisionDataset:
 
-    transformTorchVision = transforms.Compose([        
+    transformTorchVision = transforms.Compose([
       transforms.Resize((224,224), interpolation=Image.NEAREST),
       transforms.RandomHorizontalFlip(),
       transforms.ToTensor(),
     ])
-
-    """
-    🧬 Apply data augmentation on the input image
-    Source: https://medium.com/lunit/photometric-data-augmentation-in-projection-radiography-bed3ae9f55c3
-    """
-    @staticmethod
-    def __augmentation(image, beta=0.33):
-
-        # Random augmentation
-        if random.randint(0,100) < (beta*100):
-        
-            # Random Contrast
-            im3 = ImageEnhance.Contrast(image)
-            im3.enhance(random.uniform(0.5, 1.0))
-        
-            # Random Noise
-
-        return image
 
     """
     ⚖️ Balance the dataset according to the less represented label
@@ -56,7 +38,7 @@ class VisionDataset:
                 labels_cpt[label] = 0
 
         indices = []
-        for i, label in enumerate(dataset.targets):            
+        for i, label in enumerate(dataset.targets):
             if labels_cpt[label] < less_represented_train:
                 labels_cpt[label] += 1
                 indices.append(i)
@@ -74,10 +56,10 @@ class VisionDataset:
     def splitDatasets(dataset, id2label, test_ratio=0.15, balanced=True, augmentation=False):
 
         print("Split Datasets...")
-        
+
         # If balanced is enabled
         if balanced == True:
-    
+
             print("Balance train dataset...")
 
             ct = Counter(dataset.targets)
@@ -95,7 +77,7 @@ class VisionDataset:
         print("Training Dataset Elements: ", len(train_ds))
 
         # If data augmentation is enabled
-        if augmentation == True:
+        if augmentation != False:
 
             new_ds = []
 
@@ -104,15 +86,15 @@ class VisionDataset:
 
                 # Augment it
                 new_ds.append(
-                    (VisionDataset.__augmentation(img), label)
+                    (augmentation(img), label)
                 )
-            
+
             # Replace by the augmented data
             train_ds = new_ds
 
         # Test set
         test_ds = torch.utils.data.Subset(dataset, indices[train_index:])
-        
+
         ct_train = Counter(list(map(itemgetter(1), train_ds)))
         train_classes = [ct_train[int(a)] for a in list(id2label.keys())]
 
@@ -134,7 +116,7 @@ class VisionDataset:
 
     @staticmethod
     def fromImageFolder(dataset:str, test_ratio=0.15, balanced=True, augmentation=False, torch_vision=False, transform=transformTorchVision):
-        
+
         # Create ImageFolder from path
         if torch_vision == True:
             dataset = ImageFolder(dataset, transform)
@@ -151,7 +133,7 @@ class VisionDataset:
 
     @staticmethod
     def fromImageFolders(train:str, test:str, torch_vision=False, transform=transformTorchVision):
-        
+
         # Split
         if torch_vision == True:
             train = ImageFolder(train, transform)
