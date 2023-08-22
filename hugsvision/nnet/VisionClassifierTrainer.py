@@ -159,7 +159,7 @@ class VisionClassifierTrainer:
       zero_division = 0,
       digits=self.classification_report_digits,
     )
-    print(cr)
+    print('\n'+cr)
 
     # Write logs
     self.__openLogs()
